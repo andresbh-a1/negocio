@@ -1,0 +1,29 @@
+FUSIÓN STORE — Catálogo con administrador y clientes
+
+QUÉ INCLUYE
+- index.html: página responsive para clientes y panel de administrador.
+- supabase_setup.sql: tabla y permisos de seguridad.
+
+IMPORTANTE
+El panel no queda seguro ni persistente hasta configurar Supabase. No es suficiente esconder un botón en HTML.
+
+CONFIGURACIÓN
+1. Entra a https://supabase.com/ y crea un proyecto.
+2. En Authentication > Users, crea/invita un usuario para el administrador con el correo y contraseña que usarás. No habilites registro público para clientes.
+3. En Storage, crea un bucket llamado exactamente: product-images. Déjalo como público para mostrar fotos de productos; las políticas restringen la carga y eliminación al administrador autorizado.
+4. Abre supabase_setup.sql. Reemplaza TODAS las apariciones de admin@tudominio.com por el correo real del administrador. Ejecuta el SQL en Supabase > SQL Editor.
+5. En Project Settings > API (o Connect), copia Project URL y la clave pública anon/publishable. NO copies la service_role ni una secret key.
+6. Abre index.html en un editor y busca estas dos líneas:
+   const SUPABASE_URL = 'PEGA_AQUI_TU_SUPABASE_PROJECT_URL';
+   const SUPABASE_ANON_KEY = 'PEGA_AQUI_TU_SUPABASE_ANON_PUBLIC_KEY';
+   Pega los valores de tu propio proyecto dentro de las comillas.
+7. Sube index.html a Netlify reemplazando la página anterior. Si el sitio usa una carpeta de publicación, sube este archivo como index.html en la raíz de esa carpeta.
+8. Abre la web pública: los clientes no necesitan cuenta. Para administrar, pulsa “Administrador” e inicia sesión con el usuario creado en Supabase.
+
+SEGURIDAD
+- La clave pública anon/publishable puede estar en el HTML; las reglas RLS son las que protegen los datos.
+- Nunca incluyas service_role/secret keys en el HTML.
+- El correo escrito en supabase_setup.sql debe coincidir exactamente con el usuario administrador.
+- Antes de publicar, comprueba que un cliente sin sesión puede ver productos pero no puede agregarlos, editarlos ni borrarlos.
+
+Nota: este paquete es la nueva base del sitio. Las imágenes y productos que existían en tu versión anterior no se importan automáticamente; agrega los productos desde el panel una vez configurado.
