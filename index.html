@@ -98,7 +98,6 @@
       </div>
     </nav>
   </header>
-
   <main>
     <section class="hero" id="inicio">
       <div>
@@ -115,13 +114,11 @@
         <small>Accesorios para moteros y productos para acompañar tu estilo de todos los días.</small>
       </div>
     </section>
-
     <div class="perks">
       <div class="perk"><b>🏍️ Para moteros</b><span>Accesorios y productos para tu moto.</span></div>
       <div class="perk"><b>🧢 Moda y estilo</b><span>Gorras, ropa, calzado y complementos.</span></div>
       <div class="perk"><b>💬 Compra fácil</b><span>Consulta disponibilidad y pide por WhatsApp.</span></div>
     </div>
-
     <section class="section" id="productos">
       <div class="section-head">
         <div><div class="eyebrow">Catálogo</div><h2>Productos destacados</h2><p>Elige un producto y pregúntanos por WhatsApp.</p></div>
@@ -134,15 +131,13 @@
       <div class="product-grid" id="productGrid"><div class="empty">Cargando catálogo…</div></div>
       <p class="hint" id="catalogNote">La disponibilidad y el precio se confirman al hacer el pedido.</p>
     </section>
-
     <section class="section" id="nosotros">
       <div class="section-head"><div><div class="eyebrow">Quiénes somos</div><h2>Una tienda, muchos estilos</h2></div></div>
       <div class="about-grid">
         <div class="info-card"><h3>¿Qué encuentras en FUSIÓN STORE?</h3><p>Reunimos accesorios para motociclistas y productos de moda para que encuentres distintas opciones en un solo lugar. Nuestro catálogo se actualiza con los productos disponibles.</p></div>
-        <div class="info-card"><h3>¿Cómo comprar?</h3><p>Busca el producto, presiona “Pedir por WhatsApp” y envíanos tu consulta. Te confirmaremos precio, existencia, forma de pago y entrega antes de finalizar la compra.</p><a class="btn btn-green" href="https://wa.me/573024414476" target="_blank" rel="noopener">Escribir por WhatsApp</a></div>
+        <div class="info-card"><h3>¿Cómo comprar?</h3><p>Busca el producto, presiona "Pedir por WhatsApp" y envíanos tu consulta. Te confirmaremos precio, existencia, forma de pago y entrega antes de finalizar la compra.</p><a class="btn btn-green" href="https://wa.me/573024414476" target="_blank" rel="noopener">Escribir por WhatsApp</a></div>
       </div>
     </section>
-
     <section class="section" id="contacto">
       <div class="section-head"><div><div class="eyebrow">Contacto</div><h2>Hablemos de tu pedido</h2><p>Estamos disponibles para resolver tus dudas.</p></div></div>
       <div class="info-card">
@@ -152,7 +147,6 @@
       </div>
     </section>
   </main>
-
   <footer><div class="footer-inner"><div><strong>FUSIÓN STORE</strong><br><small>Estilo y accesorios en un solo lugar.</small></div><div>WhatsApp: 302 441 4476</div><small>© <span id="year"></span> FUSIÓN STORE. Todos los derechos reservados.</small></div></footer>
   <button class="admin-fab" id="openLoginBtn" title="Administración" aria-label="Abrir administración">⚙</button>
 
@@ -203,14 +197,15 @@
   </div>
 
   <script>
-    // CONFIGURACIÓN DE SUPABASE
+    // === TUS DATOS DE SUPABASE YA PUESTOS ===
     const SUPABASE_URL = 'https://pkwxdxcdexsngpslxbyo.supabase.co';
     const SUPABASE_ANON_KEY = 'sb_publishable_XBv1nIVZrqz9ZgN38bpotQ_APluBtsv';
     const WHATSAPP_NUMBER = '573024414476';
     const STORAGE_BUCKET = 'productos';
-    const configured = SUPABASE_URL.startsWith('https://') && SUPABASE_ANON_KEY.startsWith('sb_publishable_');
-    const db = configured && window.supabase ? window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY) : null;
+    // =========================================
 
+    const configured = SUPABASE_URL.startsWith('https://') && SUPABASE_ANON_KEY.length > 20;
+    const db = configured ? window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY) : null;
     const $ = id => document.getElementById(id);
     let products = [];
     let editingImageUrl = '';
@@ -240,6 +235,7 @@
       if (product.image_url) return `<img loading="lazy" src="${escapeHtml(product.image_url)}" alt="${escapeHtml(product.name)}" onerror="this.style.display='none';this.parentElement.innerHTML='<span class=&quot;placeholder&quot;>▧</span>'">`;
       return '<span class="placeholder" aria-hidden="true">▧</span>';
     }
+
     function getFilteredProducts() {
       const term = $('searchInput').value.trim().toLowerCase();
       const category = $('categoryFilter').value;
@@ -249,6 +245,7 @@
         return matchTerm && matchCategory && p.available !== false;
       });
     }
+
     function renderProducts() {
       const filtered = getFilteredProducts();
       $('productCount').textContent = `${filtered.length} producto${filtered.length === 1 ? '' : 's'}`;
@@ -273,6 +270,7 @@
         </article>`;
       }).join('');
     }
+
     function renderCategories() {
       const select = $('categoryFilter');
       const current = select.value;
@@ -280,11 +278,12 @@
       select.innerHTML = '<option value="">Todas las categorías</option>' + categories.map(c => `<option value="${escapeHtml(c)}">${escapeHtml(c)}</option>`).join('');
       if (categories.includes(current)) select.value = current;
     }
+
     async function loadProducts() {
       if (!db) {
         products = fallbackProducts();
         renderCategories(); renderProducts();
-        $('catalogNote').textContent = 'No se pudo iniciar Supabase. Revisa la conexión y la configuración.';
+        $('catalogNote').textContent = 'No se pudo conectar con Supabase. Revisa la configuración.';
         return;
       }
       const {data, error} = await db.from('products').select('*').order('created_at', {ascending:false});
@@ -292,7 +291,7 @@
         console.error(error);
         products = [];
         renderCategories(); renderProducts();
-        $('productGrid').innerHTML = '<div class="empty">No se pudo cargar el catálogo. Verifica que la tabla products exista y permita lectura pública en Supabase.</div>';
+        $('productGrid').innerHTML = '<div class="empty">No se pudo cargar el catálogo. Verifica que la tabla "products" exista y tenga permisos de lectura.</div>';
         $('productCount').textContent = 'Error de conexión';
         return;
       }
@@ -301,6 +300,7 @@
       $('catalogNote').textContent = 'La disponibilidad y el precio se confirman al hacer el pedido.';
       if (activeUser) renderAdminList();
     }
+
     function fallbackProducts() {
       return [
         {id:'demo1',name:'Guantes para moto',price:50000,category:'Accesorios para moto',description:'Consulta colores y tallas disponibles.',available:true,image_url:''},
@@ -311,6 +311,7 @@
 
     $('searchInput').addEventListener('input', renderProducts);
     $('categoryFilter').addEventListener('change', renderProducts);
+
     $('openLoginBtn').addEventListener('click', () => {
       if (!db) { alert('No se pudo conectar con Supabase. Revisa la configuración.'); return; }
       if (activeUser) openModal('adminModal'); else openModal('loginModal');
@@ -341,13 +342,14 @@
       closeModal('adminModal');
       showStatus('adminStatus','Sesión cerrada.');
     });
+
     $('newProductBtn').addEventListener('click', () => openProductForm());
     $('refreshBtn').addEventListener('click', loadProducts);
 
     function renderAdminList() {
       const list = $('adminList');
       if (!activeUser) { list.innerHTML = '<p class="hint">Inicia sesión para administrar productos.</p>'; return; }
-      if (!products.length) { list.innerHTML = '<p class="hint">Todavía no hay productos. Pulsa “Nuevo producto” para agregar el primero.</p>'; return; }
+      if (!products.length) { list.innerHTML = '<p class="hint">Todavía no hay productos. Pulsa "Nuevo producto" para agregar el primero.</p>'; return; }
       list.innerHTML = products.map(p => `<div class="admin-row">
         ${p.image_url ? `<img src="${escapeHtml(p.image_url)}" alt="">` : '<img alt="" src="data:image/svg+xml,%3Csvg xmlns=%27http://www.w3.org/2000/svg%27 width=%2752%27 height=%2752%27%3E%3Crect width=%27100%25%27 height=%27100%25%27 fill=%27%23333%27/%3E%3C/svg%3E">'}
         <div class="details"><b>${escapeHtml(p.name)}</b><small>${money(p.price)} · ${escapeHtml(p.category || 'Otros')} · ${p.available === false ? 'No disponible' : 'Disponible'}</small></div>
@@ -446,13 +448,8 @@
       activeUser = data?.session?.user || null;
       await loadProducts();
     }
+
     initializeAuth();
   </script>
 </body>
 </html>
-'''
-
-path = Path("/mnt/data/index_fusion_store.html")
-path.write_text(html, encoding="utf-8")
-print(f"Archivo creado: {path}")
-
